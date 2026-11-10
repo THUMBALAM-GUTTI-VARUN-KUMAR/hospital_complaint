@@ -140,7 +140,7 @@ export const DashboardPage = () => {
   // Filter complaints
   const filteredComplaints = useMemo(() => {
     return complaints.filter((c) => {
-      const idMatch = String(c.id || c.complaint_id || '').toLowerCase();
+      const idMatch = String(c.complaint_id || c.id || '').toLowerCase();
       const textMatch = String(c.complaint_text || c.description || '').toLowerCase();
       const query = searchQuery.toLowerCase().trim();
 
@@ -187,7 +187,7 @@ export const DashboardPage = () => {
     setUpdateError(null);
     setUpdateSuccess(false);
 
-    const cId = selectedComplaint.id || selectedComplaint.complaint_id;
+    const cId = selectedComplaint.complaint_id || selectedComplaint.id;
 
     try {
       const officerRemark = user 
@@ -203,7 +203,7 @@ export const DashboardPage = () => {
       // Update in local state
       setComplaints((prev) =>
         prev.map((item) => {
-          const itemId = item.id || item.complaint_id;
+          const itemId = item.complaint_id || item.id;
           if (itemId === cId) {
             return {
               ...item,
@@ -482,7 +482,7 @@ export const DashboardPage = () => {
                   </tr>
                 ) : (
                   filteredComplaints.map((item, index) => {
-                    const cId = item.id || item.complaint_id || `CV-${index + 1}`;
+                    const cId = item.complaint_id || item.id || `CV-${index + 1}`;
                     const isVoice = String(item.source || '').toLowerCase().includes('voice');
 
                     return (
@@ -579,7 +579,7 @@ export const DashboardPage = () => {
                   {t('dashModalTitle')}
                 </span>
                 <div className="text-lg font-mono font-bold text-[#0a0b0d] mt-0.5">
-                  {selectedComplaint.id || selectedComplaint.complaint_id}
+                  {selectedComplaint.complaint_id || selectedComplaint.id}
                 </div>
               </div>
               <button

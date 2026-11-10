@@ -128,7 +128,7 @@ export const TrackPage = () => {
 
     if (!complaint) return;
 
-    const cId = complaint.id || complaint.complaint_id || complaintIdInput;
+    const cId = complaint.complaint_id || complaint.id || complaintIdInput;
     const statusText = complaint.status || 'Submitted';
     const deptText = complaint.department || 'Hospital Administration';
     const descText = complaint.complaint_text || '';
@@ -180,7 +180,7 @@ export const TrackPage = () => {
             </div>
             <div className="flex flex-wrap gap-2">
               {userComplaints.map((c) => {
-                const cId = c.id || c.complaint_id;
+                const cId = c.complaint_id || c.id;
                 return (
                   <button
                     key={cId}
@@ -285,11 +285,11 @@ export const TrackPage = () => {
                   </span>
                   <div className="flex items-center space-x-3 mt-1">
                     <span className="text-2xl font-mono font-bold text-[#0a0b0d]">
-                      {complaint.id || complaint.complaint_id || complaintIdInput}
+                      {complaint.complaint_id || complaint.id || complaintIdInput}
                     </span>
                     <button
                       type="button"
-                      onClick={() => copyId(complaint.id || complaint.complaint_id || complaintIdInput)}
+                      onClick={() => copyId(complaint.complaint_id || complaint.id || complaintIdInput)}
                       className="p-1.5 rounded-full hover:bg-[#eef0f3] text-[#5b616e] transition-colors"
                       title="Copy ID"
                     >

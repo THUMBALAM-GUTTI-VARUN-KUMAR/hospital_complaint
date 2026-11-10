@@ -155,7 +155,7 @@ export const RegisterPage = () => {
   // SUCCESS VIEW: Shown ONLY after backend response
   // ==========================================
   if (registeredComplaint) {
-    const complaintId = registeredComplaint.id || registeredComplaint.complaint_id || registeredComplaint.tracking_id;
+    const complaintId = registeredComplaint.complaint_id || registeredComplaint.id || registeredComplaint.tracking_id;
     return (
       <div className="min-h-screen bg-white py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in duration-200">

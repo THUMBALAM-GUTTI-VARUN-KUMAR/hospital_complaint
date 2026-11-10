@@ -127,6 +127,41 @@ def list_complaints(
     return complaints
 
 
+def find_complaint_by_any_id(db: Session, identifier: str) -> Optional[Complaint]:
+    """Finds a complaint by complaint_id (e.g. CV-2026-0006), integer id (e.g. 6),
+    or trailing digits (e.g. 0006).
+    """
+    clean = str(identifier).strip()
+    if not clean:
+        return None
+
+    # 1. Exact case-insensitive match on complaint_id
+    c = db.query(Complaint).filter(Complaint.complaint_id.ilike(clean)).first()
+    if c:
+        return c
+
+    # 2. If clean is an integer, check integer id or padded suffix
+    if clean.isdigit():
+        int_id = int(clean)
+        c = db.query(Complaint).filter(Complaint.id == int_id).first()
+        if c:
+            return c
+        c = db.query(Complaint).filter(Complaint.complaint_id.ilike(f"%-{clean.zfill(4)}")).first()
+        if c:
+            return c
+
+    # 3. If identifier is like CV-6 or CV-2026-6 without 4-digit padding
+    if clean.upper().startswith("CV-"):
+        parts = clean.split("-")
+        last_part = parts[-1]
+        if last_part.isdigit():
+            c = db.query(Complaint).filter(Complaint.complaint_id.ilike(f"%-{last_part.zfill(4)}")).first()
+            if c:
+                return c
+
+    return None
+
+
 @router.get(
     "/{complaint_id}",
     response_model=ComplaintResponse,
@@ -137,7 +172,7 @@ def get_complaint(
     db: Session = Depends(get_db),
 ):
     """Retrieves full details and timeline history for a specific grievance."""
-    complaint = db.query(Complaint).filter(Complaint.complaint_id == complaint_id).first()
+    complaint = find_complaint_by_any_id(db, complaint_id)
     if not complaint:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -160,7 +195,7 @@ def update_complaint_status(
 
     and appends a transition record to complaint_history.
     """
-    complaint = db.query(Complaint).filter(Complaint.complaint_id == complaint_id).first()
+    complaint = find_complaint_by_any_id(db, complaint_id)
     if not complaint:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -176,7 +211,7 @@ def update_complaint_status(
 
     record_complaint_history(
         db=db,
-        complaint_id=complaint_id,
+        complaint_id=complaint.complaint_id,
         action="STATUS_CHANGED",
         previous_status=previous_status,
         new_status=new_status,
@@ -201,7 +236,7 @@ def assign_complaint(
     db: Session = Depends(get_db),
 ):
     """Assigns complaint to a staff member or department and logs the assignment event."""
-    complaint = db.query(Complaint).filter(Complaint.complaint_id == complaint_id).first()
+    complaint = find_complaint_by_any_id(db, complaint_id)
     if not complaint:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
