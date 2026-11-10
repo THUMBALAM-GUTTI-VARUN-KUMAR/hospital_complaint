@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { VoiceRecorder } from '../components/VoiceRecorder';
 import { ConfirmationModal } from '../components/ConfirmationModal';
@@ -17,9 +18,10 @@ import {
   AlertCircle, 
   Search, 
   Info, 
-  RotateCcw,
-  Sparkles,
-  PhoneCall
+  RotateCcw, 
+  Sparkles, 
+  PhoneCall,
+  User
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -44,6 +46,7 @@ const CATEGORIES_KN = {
 
 export const RegisterPage = () => {
   const { lang, setLang, t } = useLanguage();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -271,6 +274,37 @@ export const RegisterPage = () => {
           </div>
         )}
 
+        {/* Logged in Citizen Profile Info */}
+        {user && (
+          <div className="bg-[#f7f7f7] border border-[#dee1e6] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">
+                <User className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="font-semibold text-sm text-[#0a0b0d]">
+                    {lang === 'kn' ? (user.name_kn || user.name) : user.name}
+                  </span>
+                  <span className="badge-pill bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px]">
+                    {user.roleLabel || 'Verified Citizen'}
+                  </span>
+                </div>
+                <div className="text-[11px] text-[#5b616e] mt-0.5">
+                  Registered Contact: <strong className="font-mono text-[#0a0b0d]">{user.phone || user.identifier}</strong>
+                </div>
+              </div>
+            </div>
+            <Link
+              to="/login"
+              state={{ from: '/register' }}
+              className="text-[#0052ff] hover:underline text-xs font-semibold self-end sm:self-center"
+            >
+              {lang === 'kn' ? 'ಖಾತೆ ಬದಲಾಯಿಸಿ' : 'Switch Account'} &rarr;
+            </Link>
+          </div>
+        )}
+
         <form onSubmit={handleReviewClick} className="space-y-6">
           {/* Card: Language & Mode Selection */}
           <div className="card-coinbase p-6 space-y-6">
@@ -464,7 +498,9 @@ export const RegisterPage = () => {
           complaint_text: complaintText,
           category: lang === 'kn' ? CATEGORIES_KN[category] || category : category,
           department: department,
-          language: selectedLanguage
+          language: selectedLanguage,
+          citizen_name: user?.name,
+          citizen_contact: user?.phone || user?.identifier
         }}
       />
     </div>

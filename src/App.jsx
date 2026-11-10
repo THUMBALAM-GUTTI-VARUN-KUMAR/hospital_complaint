@@ -21,7 +21,14 @@ export function App() {
             <main className="flex-1">
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/register" element={<RegisterPage />} />
+                <Route 
+                  path="/register" 
+                  element={
+                    <ProtectedRoute>
+                      <RegisterPage />
+                    </ProtectedRoute>
+                  } 
+                />
                 <Route path="/track" element={<TrackPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route 

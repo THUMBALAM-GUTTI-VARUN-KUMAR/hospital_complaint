@@ -75,6 +75,16 @@ export const ConfirmationModal = ({
               </span>
             </div>
 
+            {/* Complainant Identity */}
+            {complaintData.citizen_name && (
+              <div className="flex items-center justify-between pb-3 border-b border-[#dee1e6]/60 text-xs">
+                <span className="text-[#7c828a]">{lang === 'kn' ? 'ದೂರುದಾರರ ವಿವರ' : 'Complainant'}</span>
+                <span className="font-semibold text-[#0a0b0d]">
+                  {complaintData.citizen_name} {complaintData.citizen_contact ? `(${complaintData.citizen_contact})` : ''}
+                </span>
+              </div>
+            )}
+
             {/* Language & Channel */}
             <div className="flex items-center justify-between pb-3 border-b border-[#dee1e6]/60 text-xs">
               <span className="text-[#7c828a]">{t('regLangLabel')}</span>

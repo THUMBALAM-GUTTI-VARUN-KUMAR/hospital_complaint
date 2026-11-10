@@ -74,7 +74,7 @@ export const LoginPage = () => {
 
   const handleQuickDemo = (roleKey) => {
     login(roleKey);
-    const redirectPath = roleKey === 'patient' ? '/track' : '/dashboard';
+    const redirectPath = location.state?.from || (roleKey === 'patient' ? '/register' : '/dashboard');
     navigate(redirectPath, { replace: true });
   };
 
@@ -97,6 +97,18 @@ export const LoginPage = () => {
 
         {/* Main Card */}
         <div className="bg-white border border-[#dee1e6] rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+          {/* Redirect advisory banner */}
+          {location.state?.from === '/register' && (
+            <div className="p-3.5 bg-blue-50/80 border border-blue-200 rounded-2xl flex items-center space-x-2.5 text-xs text-[#0052ff]">
+              <Sparkles className="w-4 h-4 shrink-0" />
+              <span>
+                {lang === 'kn' 
+                  ? 'ದೂರು ದಾಖಲಿಸಲು ದಯವಿಟ್ಟು ರೋಗಿ/ನಾಗರಿಕ ಖಾತೆಗೆ ಲಾಗಿನ್ ಆಗಿ.' 
+                  : 'Please sign in to register and link your hospital grievance.'}
+              </span>
+            </div>
+          )}
+
           {/* Role Selection Tabs (Coinbase Pill design) */}
           <div className="space-y-2">
             <span className="text-xs font-semibold text-[#7c828a] uppercase tracking-wider block">
@@ -287,3 +299,4 @@ export const LoginPage = () => {
     </div>
   );
 };
+
