@@ -208,3 +208,4 @@ export const VoiceRecorder = ({ onTranscriptChange, currentText, selectedLang })
     </div>
   );
 };
+

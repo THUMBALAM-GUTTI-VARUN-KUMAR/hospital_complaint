@@ -311,3 +311,4 @@ export const DEPARTMENT_MAPPING_KN = {
   "Infrastructure problem": "ಆಸ್ಪತ್ರೆ ಮೂಲಸೌಕರ್ಯ ಮತ್ತು ನಿರ್ವಹಣೆ",
   "Other": "ಸಾರ್ವಜನಿಕ ಸಂಪರ್ಕ ಮತ್ತು ರೋಗಿ ಕಲ್ಯಾಣ ವಿಭಾಗ"
 };
+

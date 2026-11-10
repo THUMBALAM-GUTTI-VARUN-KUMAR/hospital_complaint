@@ -470,3 +470,4 @@ export const RegisterPage = () => {
     </div>
   );
 };
+

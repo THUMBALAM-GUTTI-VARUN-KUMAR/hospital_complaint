@@ -42,3 +42,4 @@ assert r.status_code == 200, f'Get all failed: {r.status_code}'
 print('All complaints count:', len(r.json()))
 
 print('ALL API CONTRACT CHECKS VERIFIED SUCCESSFULLY!')
+

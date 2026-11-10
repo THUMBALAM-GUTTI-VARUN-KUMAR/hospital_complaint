@@ -210,3 +210,4 @@ export const Navbar = () => {
     </header>
   );
 };
+
