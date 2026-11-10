@@ -19,15 +19,15 @@ RAW_DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 
 
 def parse_and_clean_postgres_url(raw_url: str) -> str:
-    """Parses and sanitizes PostgreSQL connection string.
-
-    - Handles passwords with special characters (e.g. '@', '%', '&') via URL-encoding.
-    - Strips unintended surrounding brackets '[...]' from passwords.
-    - Ensures the psycopg2 driver is used (postgresql+psycopg2://).
-    - Enforces PostgreSQL only (no SQLite fallback in runtime).
+    """Parses and sanitizes connection string.
+    - If empty, defaults gracefully to local SQLite (carevoice.db) for development.
+    - If PostgreSQL, cleans URL-encoding for special characters and ensures psycopg2 driver.
     """
     if not raw_url:
-        raise ValueError("DATABASE_URL is not configured in .env file.")
+        return "sqlite:///./carevoice.db"
+
+    if raw_url.startswith("sqlite"):
+        return raw_url
 
     if not (
         raw_url.startswith("postgres://")
@@ -35,7 +35,7 @@ def parse_and_clean_postgres_url(raw_url: str) -> str:
         or raw_url.startswith("postgresql+psycopg2://")
     ):
         raise ValueError(
-            "Invalid DATABASE_URL dialect. CAREVOICE is configured for PostgreSQL only."
+            "Invalid DATABASE_URL dialect. CAREVOICE is configured for PostgreSQL or SQLite."
         )
 
     url = raw_url
@@ -65,15 +65,21 @@ def parse_and_clean_postgres_url(raw_url: str) -> str:
 
 DATABASE_URL = parse_and_clean_postgres_url(RAW_DATABASE_URL)
 
-# PostgreSQL engine configuration with connection pooling and pre-ping
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    pool_recycle=300,
-    pool_size=10,
-    max_overflow=20,
-    connect_args={"connect_timeout": 15},
-)
+# Engine configuration (SQLite or PostgreSQL)
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+    )
+else:
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,
+        pool_recycle=300,
+        pool_size=10,
+        max_overflow=20,
+        connect_args={"connect_timeout": 15},
+    )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

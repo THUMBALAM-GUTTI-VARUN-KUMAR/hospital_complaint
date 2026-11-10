@@ -42,20 +42,18 @@ export const api = {
    * }
    */
   async registerComplaint(complaintData) {
-    // Only send the exact fields required by the API contract
+    const text = complaintData.complaint_text || complaintData.description || '';
     const payload = {
-      complaint_text: complaintData.complaint_text,
+      description: text,
+      complaint_text: text,
+      patient_name: complaintData.patient_name || complaintData.citizen_name || 'Citizen',
+      contact_number: complaintData.contact_number || complaintData.citizen_contact || null,
+      category: complaintData.category || 'Other',
+      department: complaintData.department || 'Hospital Administration',
+      priority: 'Medium',
       language: complaintData.language || 'en',
       source: complaintData.source || 'web'
     };
-
-    // If backend optionally accepts category or department, include if provided
-    if (complaintData.category) {
-      payload.category = complaintData.category;
-    }
-    if (complaintData.department) {
-      payload.department = complaintData.department;
-    }
 
     const response = await client.post('/api/complaints', payload);
     return response.data;
@@ -91,11 +89,36 @@ export const api = {
    */
   async updateComplaintStatus(complaintId, status, extra = {}) {
     const cleanId = encodeURIComponent(String(complaintId).trim());
+
+    // Normalize status string to backend schema (Pending, In Progress, Resolved, Closed, Escalated)
+    let mappedStatus = status;
+    const sLower = String(status).toLowerCase();
+    if (sLower.includes('submit') || sLower.includes('pend')) mappedStatus = 'Pending';
+    else if (sLower.includes('progress')) mappedStatus = 'In Progress';
+    else if (sLower.includes('resolve')) mappedStatus = 'Resolved';
+    else if (sLower.includes('close') || sLower.includes('reject')) mappedStatus = 'Closed';
+
     const payload = {
-      status,
-      ...extra
+      status: mappedStatus,
+      changed_by: extra.changed_by || 'Hospital Staff',
+      notes: extra.remarks || extra.notes || 'Status updated via Staff Portal',
+      resolution_notes: mappedStatus === 'Resolved' || mappedStatus === 'Closed' ? (extra.remarks || 'Grievance redressed') : undefined
     };
+
     const response = await client.patch(`/api/complaints/${cleanId}/status`, payload);
+
+    if (extra.department) {
+      try {
+        await client.patch(`/api/complaints/${cleanId}/assign`, {
+          assigned_to: extra.assigned_to || 'Department Duty Officer',
+          assigned_department: extra.department,
+          notes: `Reassigned to ${extra.department}`
+        });
+      } catch (e) {
+        // Optional if backend assign has separate authorization
+      }
+    }
+
     return response.data;
   }
 };

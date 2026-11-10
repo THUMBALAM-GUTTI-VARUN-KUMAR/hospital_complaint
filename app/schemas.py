@@ -32,13 +32,15 @@ class ComplaintStatus(str, Enum):
 class ComplaintCreate(BaseModel):
     """Schema for submitting a new grievance via Web portal or Voice Call integration."""
 
-    patient_name: str = Field(..., min_length=2, max_length=255, description="Full name of the patient or complainant")
+    patient_name: Optional[str] = Field("Citizen", max_length=255, description="Full name of the patient or complainant")
     contact_number: Optional[str] = Field(None, max_length=50, description="Phone number or mobile contact")
-    department: str = Field(..., min_length=2, max_length=100, description="Concerned hospital department")
-    category: str = Field(..., min_length=2, max_length=100, description="Complaint category")
+    department: Optional[str] = Field("Hospital Administration", max_length=100, description="Concerned hospital department")
+    category: Optional[str] = Field("Other", max_length=100, description="Complaint category")
     priority: PriorityLevel = Field(default=PriorityLevel.MEDIUM, description="Initial priority level")
     source: SourceType = Field(default=SourceType.WEB, description="Channel of intake: web or voice_call")
-    description: str = Field(..., min_length=5, description="Detailed description of the grievance")
+    description: Optional[str] = Field(None, description="Detailed description of the grievance")
+    complaint_text: Optional[str] = Field(None, description="Alternative field for complaint text")
+    language: Optional[str] = Field("en", description="Language code")
     assigned_to: Optional[str] = Field(None, description="Optional pre-assigned staff member or nodal officer")
     assigned_department: Optional[str] = Field(None, description="Optional target department for assignment")
     call_recording_url: Optional[str] = Field(None, description="Audio recording URL if received through voice call")
@@ -92,6 +94,7 @@ class ComplaintResponse(BaseModel):
     status: str
     source: str
     description: str
+    complaint_text: Optional[str] = None
     assigned_to: Optional[str] = None
     assigned_department: Optional[str] = None
     resolution_notes: Optional[str] = None

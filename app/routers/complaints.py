@@ -41,16 +41,21 @@ def create_complaint(
     """
     new_id = generate_complaint_id(db)
 
+    desc = (payload.description or payload.complaint_text or "No description provided").strip()
+    p_name = (payload.patient_name or "Citizen").strip()
+    dept = (payload.department or "Hospital Administration").strip()
+    cat = (payload.category or "Other").strip()
+
     complaint = Complaint(
         complaint_id=new_id,
-        patient_name=payload.patient_name.strip(),
+        patient_name=p_name,
         contact_number=payload.contact_number.strip() if payload.contact_number else None,
-        department=payload.department.strip(),
-        category=payload.category.strip(),
+        department=dept,
+        category=cat,
         priority=payload.priority.value,
         status="Pending",
         source=payload.source.value,
-        description=payload.description.strip(),
+        description=desc,
         assigned_to=payload.assigned_to.strip() if payload.assigned_to else None,
         assigned_department=payload.assigned_department.strip() if payload.assigned_department else None,
         call_recording_url=payload.call_recording_url,
