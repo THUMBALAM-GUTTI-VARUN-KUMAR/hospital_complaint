@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { StatusBadge } from '../components/StatusBadge';
 import { BackendStatusAlert } from '../components/BackendStatusAlert';
@@ -38,6 +39,7 @@ const DEPARTMENTS = [
 
 export const DashboardPage = () => {
   const { lang, t } = useLanguage();
+  const { user, role } = useAuth();
 
   // Data state
   const [complaints, setComplaints] = useState([]);
@@ -50,6 +52,7 @@ export const DashboardPage = () => {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [sourceFilter, setSourceFilter] = useState('ALL');
+  const [myDeptOnly, setMyDeptOnly] = useState(false);
 
   // Detail & Status Edit Modal State
   const [selectedComplaint, setSelectedComplaint] = useState(null);
@@ -158,9 +161,12 @@ export const DashboardPage = () => {
         (sourceFilter === 'voice' && source.includes('voice')) ||
         (sourceFilter === 'web' && !source.includes('voice'));
 
-      return matchesSearch && matchesStatus && matchesCategory && matchesSource;
+      const matchesDept = !myDeptOnly || !user?.department ||
+        String(c.department || '').toLowerCase().includes(user.department.toLowerCase().slice(0, 8));
+
+      return matchesSearch && matchesStatus && matchesCategory && matchesSource && matchesDept;
     });
-  }, [complaints, searchQuery, statusFilter, categoryFilter, sourceFilter]);
+  }, [complaints, searchQuery, statusFilter, categoryFilter, sourceFilter, myDeptOnly, user]);
 
   // Handle open complaint detail drawer
   const handleOpenDetail = (complaint) => {
@@ -184,9 +190,13 @@ export const DashboardPage = () => {
     const cId = selectedComplaint.id || selectedComplaint.complaint_id;
 
     try {
+      const officerRemark = user 
+        ? `[Updated by ${user.name} (${user.roleLabel || user.role})]: ${statusRemarks || 'Status updated'}` 
+        : statusRemarks;
+
       const extraPayload = {
         department: newDept,
-        remarks: statusRemarks
+        remarks: officerRemark
       };
       const res = await api.updateComplaintStatus(cId, newStatus, extraPayload);
       
@@ -249,6 +259,62 @@ export const DashboardPage = () => {
             </button>
           </div>
         </div>
+
+        {/* Authenticated Officer Session Card */}
+        {user && (
+          <div className="bg-white border border-[#dee1e6] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+            <div className="flex items-center space-x-3">
+              <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm ${
+                user.role === 'admin' 
+                  ? 'bg-purple-100 text-purple-700' 
+                  : 'bg-blue-100 text-[#0052ff]'
+              }`}>
+                {user.role === 'admin' ? <Building className="w-5 h-5" /> : <UserCheck className="w-5 h-5" />}
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="font-semibold text-sm text-[#0a0b0d]">
+                    {lang === 'kn' ? (user.name_kn || user.name) : user.name}
+                  </span>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                    user.role === 'admin' 
+                      ? 'bg-purple-50 text-purple-700 border border-purple-200' 
+                      : 'bg-blue-50 text-[#0052ff] border border-blue-200'
+                  }`}>
+                    {user.roleLabel || user.role}
+                  </span>
+                </div>
+                <div className="text-xs text-[#5b616e] mt-0.5 flex flex-wrap items-center gap-x-2">
+                  <span>{user.designation || user.department}</span>
+                  {user.id && <span className="text-[#7c828a] font-mono text-[11px]">({user.id})</span>}
+                </div>
+              </div>
+            </div>
+
+            {/* If Staff: Filter My Department toggle */}
+            {user.role === 'staff' && user.department && (
+              <div className="flex items-center space-x-2 self-start sm:self-center">
+                <button
+                  type="button"
+                  onClick={() => setMyDeptOnly(!myDeptOnly)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                    myDeptOnly
+                      ? 'bg-[#0052ff] text-white border-[#0052ff] shadow-xs'
+                      : 'bg-[#f7f7f7] text-[#0a0b0d] border-[#dee1e6] hover:bg-[#eef0f3]'
+                  }`}
+                >
+                  {myDeptOnly ? '✓ Showing My Department' : 'Filter My Department Grievances'}
+                </button>
+              </div>
+            )}
+
+            {user.role === 'admin' && (
+              <div className="text-xs text-purple-700 font-semibold bg-purple-50/70 border border-purple-200 px-3 py-1.5 rounded-full self-start sm:self-center">
+                Full Administrative Rights Enabled
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Backend Connection Error Alert */}
         {error && (

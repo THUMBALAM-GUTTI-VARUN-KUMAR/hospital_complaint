@@ -142,7 +142,33 @@ export const translations = {
     // Common
     errorBackendOffline: "Hospital backend server is unreachable (localhost:8000). Please ensure the backend is running.",
     btnRetry: "Retry Connection",
-    poweredBy: "CareVoice Public Healthcare Redressal Framework • Health & Family Welfare Department"
+    poweredBy: "CareVoice Public Healthcare Redressal Framework • Health & Family Welfare Department",
+
+    // Auth & Login
+    navSignIn: "Sign In",
+    navSignOut: "Sign Out",
+    loginTitle: "CareVoice Access Portal",
+    loginSubtitle: "Sign in with your role to securely access hospital grievance services",
+    rolePatient: "Citizen / Patient",
+    roleStaff: "Hospital Staff",
+    roleAdmin: "Hospital Administrator",
+    loginPatientTitle: "Citizen & Patient Access",
+    loginPatientDesc: "Track your filed hospital grievances, register complaints, and receive real-time resolution updates.",
+    loginStaffTitle: "Hospital Duty Staff Login",
+    loginStaffDesc: "For doctors, nurses, pharmacy managers, and sanitation supervisors to update grievance statuses.",
+    loginAdminTitle: "Hospital Administrator Portal",
+    loginAdminDesc: "For Medical Superintendents & District Health Officers to monitor all grievances, KPIs, and department assignments.",
+    loginIdentifier: "Registered Mobile Number or Email",
+    loginPassword: "Password / Security PIN",
+    btnLogin: "Secure Sign In",
+    loginQuickDemo: "Instant 1-Click Demo Login",
+    loginAsPatient: "Demo Patient (Rajesh Kumar)",
+    loginAsStaff: "Demo Staff (Dr. Sunita Rao)",
+    loginAsAdmin: "Demo Admin (Dr. A.K. Sharma)",
+    loginNotice: "Official Government Healthcare Grievance System • Secured Session",
+    loginRequiredNotice: "Please sign in to access the Staff & Admin Grievance Desk.",
+    patientMyGrievances: "My Lodged Grievances",
+    patientWelcome: "Welcome, Citizen"
   },
 
   kn: {
@@ -288,7 +314,33 @@ export const translations = {
     // Common
     errorBackendOffline: "ಆಸ್ಪತ್ರೆಯ ಸರ್ವರ್ ಸಂಪರ್ಕ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ (localhost:8000). ದಯವಿಟ್ಟು ಬ್ಯಾಕೆಂಡ್ ಚಾಲನೆಯಲ್ಲಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಿ.",
     btnRetry: "ಮರುಪ್ರಯತ್ನಿಸಿ",
-    poweredBy: "ಕೇರ್‌ವಾಯ್ಸ್ ಸಾರ್ವಜನಿಕ ಆರೋಗ್ಯ ಪರಿಹಾರ ವೇದಿಕೆ • ಆರೋಗ್ಯ ಮತ್ತು ಕುಟುಂಬ ಕಲ್ಯಾಣ ಇಲಾಖೆ"
+    poweredBy: "ಕೇರ್‌ವಾಯ್ಸ್ ಸಾರ್ವಜನಿಕ ಆರೋಗ್ಯ ಪರಿಹಾರ ವೇದಿಕೆ • ಆರೋಗ್ಯ ಮತ್ತು ಕುಟುಂಬ ಕಲ್ಯಾಣ ಇಲಾಖೆ",
+
+    // Auth & Login
+    navSignIn: "ಲಾಗಿನ್",
+    navSignOut: "ಲಾಗ್‌ಔಟ್",
+    loginTitle: "ಕೇರ್‌ವಾಯ್ಸ್ ಪ್ರವೇಶ ಪೋರ್ಟಲ್",
+    loginSubtitle: "ಆಸ್ಪತ್ರೆ ಕುಂದುಕೊರತೆ ಸೇವೆಗಳಿಗೆ ಪ್ರವೇಶಿಸಲು ನಿಮ್ಮ ಪಾತ್ರವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+    rolePatient: "ನಾಗರಿಕರು / ರೋಗಿಗಳು",
+    roleStaff: "ಆಸ್ಪತ್ರೆ ಸಿಬ್ಬಂದಿ",
+    roleAdmin: "ಆಸ್ಪತ್ರೆ ಆಡಳಿತಾಧಿಕಾರಿ",
+    loginPatientTitle: "ನಾಗರಿಕ ಮತ್ತು ರೋಗಿಗಳ ಲಾಗಿನ್",
+    loginPatientDesc: "ನೀವು ಸಲ್ಲಿಸಿದ ದೂರುಗಳನ್ನು ವೀಕ್ಷಿಸಿ ಮತ್ತು ತ್ವರಿತ ಪರಿಹಾರ ಸ್ಥಿತಿ ಪಡೆಯಿರಿ.",
+    loginStaffTitle: "ಕರ್ತವ್ಯನಿರತ ಸಿಬ್ಬಂದಿ ಲಾಗಿನ್",
+    loginStaffDesc: "ವೈದ್ಯರು, ಶುಶ್ರೂಷಕರು ಮತ್ತು ವಿಭಾಗೀಯ ಮೇಲ್ವಿಚಾರಕರಿಗೆ ದೂರುಗಳ ಸ್ಥಿತಿ ನವೀಕರಿಸಲು.",
+    loginAdminTitle: "ಆಸ್ಪತ್ರೆ ಮುಖ್ಯ ಆಡಳಿತ ಪೋರ್ಟಲ್",
+    loginAdminDesc: "ವೈದ್ಯಕೀಯ ಅಧೀಕ್ಷಕರು ಹಾಗೂ ಜಿಲ್ಲಾ ಆರೋಗ್ಯ ಅಧಿಕಾರಿಗಳ ನೇರ ಮೇಲ್ವಿಚಾರಣೆಗಾಗಿ.",
+    loginIdentifier: "ನೋಂದಾಯಿತ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ ಅಥವಾ ಇಮೇಲ್",
+    loginPassword: "ಪಾಸ್‌ವರ್ಡ್ / ಭದ್ರತಾ ಪಿನ್",
+    btnLogin: "ಸುರಕ್ಷಿತವಾಗಿ ಲಾಗಿನ್ ಆಗಿ",
+    loginQuickDemo: "ತಕ್ಷಣದ 1-ಕ್ಲಿಕ್ ಡೆಮೊ ಲಾಗಿನ್",
+    loginAsPatient: "ರೋಗಿ ಲಾಗಿನ್ (ರಾಜೇಶ್ ಕುಮಾರ್)",
+    loginAsStaff: "ಸಿಬ್ಬಂದಿ ಲಾಗಿನ್ (ಡಾ. ಸುನೀತಾ ರಾವ್)",
+    loginAsAdmin: "ಆಡಳಿತಾಧಿಕಾರಿ ಲಾಗಿನ್ (ಡಾ. ಎ.ಕೆ. ಶರ್ಮಾ)",
+    loginNotice: "ಸರ್ಕಾರಿ ಸಾರ್ವಜನಿಕ ಆರೋಗ್ಯ ರಕ್ಷಣೆ ವ್ಯವಸ್ಥೆ • ಅಧಿಕೃತ ಲಾಗಿನ್",
+    loginRequiredNotice: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಪ್ರವೇಶಿಸಲು ದಯವಿಟ್ಟು ಸಿಬ್ಬಂದಿ ಅಥವಾ ಆಡಳಿತ ಖಾತೆಯಿಂದ ಲಾಗಿನ್ ಆಗಿ.",
+    patientMyGrievances: "ನನ್ನ ದೂರುಗಳ ಪಟ್ಟಿ",
+    patientWelcome: "ಸ್ವಾಗತ, ನಾಗರಿಕರೇ"
   }
 };
 

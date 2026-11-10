@@ -1,24 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { 
   Activity, 
-  Globe, 
   Menu, 
   X, 
   PhoneCall, 
   FileText, 
   Search, 
   LayoutDashboard,
-  ShieldCheck
+  ShieldCheck,
+  LogIn,
+  LogOut,
+  User,
+  Stethoscope,
+  Building2
 } from 'lucide-react';
 
 export const Navbar = () => {
-  const { lang, setLang, toggleLanguage, t } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
+  const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [backendStatus, setBackendStatus] = useState('checking'); // 'online' | 'offline' | 'checking'
+  const [backendStatus, setBackendStatus] = useState('checking');
 
   useEffect(() => {
     let isMounted = true;
@@ -47,6 +55,19 @@ export const Navbar = () => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const getRoleIcon = (role) => {
+    if (role === 'admin') return Building2;
+    if (role === 'staff') return Stethoscope;
+    return User;
+  };
+
+  const RoleIcon = user ? getRoleIcon(user.role) : User;
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-[#dee1e6]">
@@ -123,7 +144,7 @@ export const Navbar = () => {
           })}
         </nav>
 
-        {/* Right side controls: Language switcher & Primary CTA */}
+        {/* Right side controls: Language switcher, Auth state & Primary CTA */}
         <div className="flex items-center space-x-3">
           {/* Language Toggle Pill */}
           <div className="flex items-center bg-[#eef0f3] p-1 rounded-full border border-[#dee1e6]">
@@ -151,6 +172,43 @@ export const Navbar = () => {
             </button>
           </div>
 
+          {/* User Account / Sign In Pill */}
+          {isAuthenticated ? (
+            <div className="flex items-center space-x-2">
+              <div 
+                className={`hidden lg:flex items-center space-x-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${
+                  user.badgeColor || 'bg-[#eef0f3] text-[#0a0b0d] border-[#dee1e6]'
+                }`}
+                title={`${user.name} - ${user.department || user.roleLabel}`}
+              >
+                <RoleIcon className="w-3.5 h-3.5" />
+                <span className="truncate max-w-[120px]">
+                  {lang === 'kn' ? (user.name_kn || user.name) : user.name}
+                </span>
+                <span className="opacity-75 uppercase text-[10px]">
+                  ({user.role})
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex items-center px-3 py-1.5 rounded-full border border-[#dee1e6] hover:border-[#cf202f] hover:text-[#cf202f] text-xs font-semibold text-[#5b616e] transition-colors"
+                title={t('navSignOut')}
+              >
+                <LogOut className="w-3.5 h-3.5 mr-1" />
+                <span className="hidden sm:inline">{t('navSignOut')}</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="inline-flex items-center px-3.5 py-1.5 rounded-full border border-[#dee1e6] hover:border-[#0052ff] hover:text-[#0052ff] text-xs font-semibold text-[#0a0b0d] transition-colors"
+            >
+              <LogIn className="w-3.5 h-3.5 mr-1.5 text-[#0052ff]" />
+              <span>{t('navSignIn')}</span>
+            </Link>
+          )}
+
           {/* Quick Register CTA Button */}
           <Link
             to="/register"
@@ -174,6 +232,25 @@ export const Navbar = () => {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-[#dee1e6] bg-white px-4 pt-3 pb-6 space-y-3">
+          {isAuthenticated && (
+            <div className="p-3 bg-[#f7f7f7] rounded-2xl border border-[#dee1e6] flex items-center justify-between text-xs">
+              <div className="flex items-center space-x-2">
+                <RoleIcon className="w-4 h-4 text-[#0052ff]" />
+                <div>
+                  <div className="font-semibold text-[#0a0b0d]">{user.name}</div>
+                  <div className="text-[10px] text-[#7c828a] uppercase">{user.roleLabel || user.role}</div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-xs text-[#cf202f] font-semibold"
+              >
+                {t('navSignOut')}
+              </button>
+            </div>
+          )}
+
           <div className="space-y-1">
             {navLinks.map((link) => {
               const Icon = link.icon;
@@ -196,7 +273,17 @@ export const Navbar = () => {
             })}
           </div>
 
-          <div className="pt-2 border-t border-[#dee1e6]">
+          <div className="pt-2 border-t border-[#dee1e6] space-y-2">
+            {!isAuthenticated && (
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-center py-2.5 px-4 rounded-full border border-[#dee1e6] text-[#0a0b0d] font-semibold text-xs"
+              >
+                <LogIn className="w-4 h-4 mr-2 text-[#0052ff]" />
+                <span>{t('navSignIn')}</span>
+              </Link>
+            )}
             <Link
               to="/register"
               onClick={() => setMobileMenuOpen(false)}
@@ -210,4 +297,3 @@ export const Navbar = () => {
     </header>
   );
 };
-
