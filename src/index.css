@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0052ff;
+  --color-primary-active: #003ecc;
+  --color-primary-disabled: #a8b8cc;
+  --color-ink: #0a0b0d;
+  --color-body: #5b616e;
+  --color-muted: #7c828a;
+  --color-muted-soft: #a8acb3;
+  --color-hairline: #dee1e6;
+  --color-hairline-soft: #eef0f3;
+  --color-surface-soft: #f7f7f7;
+  --color-surface-strong: #eef0f3;
+  --color-surface-dark: #0a0b0d;
+  --color-surface-dark-elevated: #16181c;
+  --color-semantic-up: #05b169;
+  --color-semantic-down: #cf202f;
+  --color-semantic-amber: #f59e0b;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+:root {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background-color: #ffffff;
+}
+
+/* Custom utility classes reflecting the minimalist Coinbase design specs */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.75rem 1.5rem;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-active);
+}
+.btn-primary:disabled {
+  background-color: var(--color-primary-disabled);
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--color-surface-strong);
+  color: var(--color-ink);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.75rem 1.5rem;
+  transition: background-color 0.15s ease;
+}
+.btn-secondary:hover:not(:disabled) {
+  background-color: #e2e5ea;
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid var(--color-hairline);
+  background-color: transparent;
+  color: var(--color-ink);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.15s ease;
+}
+.btn-outline:hover:not(:disabled) {
+  border-color: var(--color-ink);
+  background-color: var(--color-surface-soft);
+}
+
+.card-coinbase {
+  background-color: #ffffff;
+  border: 1px solid var(--color-hairline);
+  border-radius: 1.5rem;
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
