@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { StatusBadge } from '../components/StatusBadge';
 import { BackendStatusAlert } from '../components/BackendStatusAlert';
@@ -18,11 +19,16 @@ import {
   Copy, 
   Printer, 
   RefreshCw,
-  ArrowRight
+  ArrowRight,
+  Volume2,
+  VolumeX,
+  User,
+  ExternalLink
 } from 'lucide-react';
 
 export const TrackPage = () => {
   const { lang, t } = useLanguage();
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [complaintIdInput, setComplaintIdInput] = useState('');
@@ -30,6 +36,8 @@ export const TrackPage = () => {
   const [complaint, setComplaint] = useState(null);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [userComplaints, setUserComplaints] = useState([]);
 
   // If query parameter ?id=... is present, auto-fetch
   useEffect(() => {
@@ -40,9 +48,33 @@ export const TrackPage = () => {
     }
   }, [searchParams]);
 
+  // Load user's complaints if logged in as patient
+  useEffect(() => {
+    if (user?.role === 'patient') {
+      api.getAllComplaints().then((data) => {
+        const list = Array.isArray(data) ? data : (data.complaints || []);
+        setUserComplaints(list.slice(0, 5));
+      }).catch(() => {});
+    }
+  }, [user]);
+
+  // Clean up speech synthesis when component unmounts
+  useEffect(() => {
+    return () => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
   const fetchComplaint = async (idToFetch) => {
     const targetId = idToFetch || complaintIdInput;
     if (!targetId || !targetId.trim()) return;
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
 
     setLoading(true);
     setError(null);
@@ -84,6 +116,41 @@ export const TrackPage = () => {
     setTimeout(() => setCopied(false), 2500);
   };
 
+  // Accessibility: Text-to-speech audio status reading
+  const toggleSpeech = () => {
+    if (!window.speechSynthesis) return;
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    if (!complaint) return;
+
+    const cId = complaint.id || complaint.complaint_id || complaintIdInput;
+    const statusText = complaint.status || 'Submitted';
+    const deptText = complaint.department || 'Hospital Administration';
+    const descText = complaint.complaint_text || '';
+
+    let textToSpeak = '';
+    if (lang === 'kn') {
+      textToSpeak = `ದೂರು ಸಂಖ್ಯೆ: ${cId}. ಪ್ರಸ್ತುತ ಸ್ಥಿತಿ: ${statusText}. ನಿಯೋಜಿತ ಇಲಾಖೆ: ${deptText}. ದೂರಿನ ವಿವರ: ${descText}`;
+    } else {
+      textToSpeak = `Complaint ID: ${cId}. Current status is: ${statusText}. Assigned department: ${deptText}. Grievance summary: ${descText}`;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = lang === 'kn' ? 'kn-IN' : 'en-IN';
+    utterance.rate = 0.95;
+
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    setIsSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
   return (
     <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto space-y-8">
@@ -100,6 +167,42 @@ export const TrackPage = () => {
             {t('trackSubtitle')}
           </p>
         </div>
+
+        {/* Citizen Quick Access List (if logged in as patient) */}
+        {user?.role === 'patient' && userComplaints.length > 0 && (
+          <div className="bg-[#f7f7f7] border border-[#dee1e6] rounded-2xl p-4 sm:p-5 space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-semibold text-[#0a0b0d] flex items-center">
+                <User className="w-4 h-4 mr-1.5 text-emerald-600" />
+                <span>{lang === 'kn' ? 'ನನ್ನ ದಾಖಲಾದ ದೂರುಗಳು' : 'My Filed Grievances'} ({user.name})</span>
+              </span>
+              <span className="text-[11px] text-[#7c828a]">Click ID to view</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {userComplaints.map((c) => {
+                const cId = c.id || c.complaint_id;
+                return (
+                  <button
+                    key={cId}
+                    type="button"
+                    onClick={() => {
+                      setComplaintIdInput(cId);
+                      setSearchParams({ id: cId });
+                      fetchComplaint(cId);
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-mono font-semibold border transition-all ${
+                      complaintIdInput === cId
+                        ? 'bg-[#0052ff] text-white border-[#0052ff] shadow-xs'
+                        : 'bg-white text-[#0a0b0d] border-[#dee1e6] hover:border-[#0052ff]'
+                    }`}
+                  >
+                    {cId}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Search Input Box */}
         <div className="card-coinbase p-6 sm:p-8 space-y-4">
@@ -200,12 +303,37 @@ export const TrackPage = () => {
                   </div>
                 </div>
 
-                {/* Status Badge */}
-                <div className="flex flex-col items-start sm:items-end">
+                {/* Status Badge & Audio Readout Button */}
+                <div className="flex flex-col items-start sm:items-end gap-2">
                   <span className="text-xs uppercase font-semibold text-[#7c828a] tracking-wider mb-1">
                     {t('trackFieldStatus')}
                   </span>
-                  <StatusBadge status={complaint.status || 'Submitted'} />
+                  <div className="flex items-center space-x-2">
+                    <StatusBadge status={complaint.status || 'Submitted'} />
+                    {/* Accessibility Speak Button */}
+                    <button
+                      type="button"
+                      onClick={toggleSpeech}
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                        isSpeaking
+                          ? 'bg-red-50 text-red-600 border-red-200 animate-pulse'
+                          : 'bg-[#f7f7f7] hover:bg-[#eef0f3] text-[#0a0b0d] border-[#dee1e6]'
+                      }`}
+                      title={isSpeaking ? 'Stop Audio Readout' : 'Listen to Status (Speech Synthesis)'}
+                    >
+                      {isSpeaking ? (
+                        <>
+                          <VolumeX className="w-3.5 h-3.5 mr-1 text-red-600" />
+                          <span>Stop Audio</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-3.5 h-3.5 mr-1 text-[#0052ff]" />
+                          <span>{lang === 'kn' ? 'ಆಲಿಸಿ' : 'Listen'}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -375,4 +503,3 @@ export const TrackPage = () => {
     </div>
   );
 };
-
