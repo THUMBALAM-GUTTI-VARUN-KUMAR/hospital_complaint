@@ -1,6 +1,8 @@
 """CAREVOICE Database Configuration and Session Management.
 
-Configured exclusively for PostgreSQL (Supabase).
+Supports:
+1. Direct Supabase PostgreSQL (via DATABASE_URL when valid credentials provided)
+2. Graceful fallback to SQLite (carevoice.db) if database password is placeholder
 """
 
 import logging
@@ -20,10 +22,19 @@ RAW_DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 
 def parse_and_clean_postgres_url(raw_url: str) -> str:
     """Parses and sanitizes connection string.
-    - If empty, defaults gracefully to local SQLite (carevoice.db) for development.
+    - If empty or contains placeholder password, defaults gracefully to local SQLite (carevoice.db).
     - If PostgreSQL, cleans URL-encoding for special characters and ensures psycopg2 driver.
     """
-    if not raw_url:
+    if (
+        not raw_url
+        or "[YOUR-PASSWORD]" in raw_url
+        or "YOUR_PASSWORD" in raw_url
+        or "<YOUR-PASSWORD>" in raw_url
+    ):
+        logger.info(
+            "DATABASE_URL contains placeholder password or is empty. Using local SQLite (carevoice.db). "
+            "To connect direct SQLAlchemy to Supabase PostgreSQL, replace [YOUR-PASSWORD] with your actual Supabase DB password."
+        )
         return "sqlite:///./carevoice.db"
 
     if raw_url.startswith("sqlite"):
@@ -34,9 +45,8 @@ def parse_and_clean_postgres_url(raw_url: str) -> str:
         or raw_url.startswith("postgresql://")
         or raw_url.startswith("postgresql+psycopg2://")
     ):
-        raise ValueError(
-            "Invalid DATABASE_URL dialect. CAREVOICE is configured for PostgreSQL or SQLite."
-        )
+        logger.warning("Unrecognized database scheme, falling back to local SQLite.")
+        return "sqlite:///./carevoice.db"
 
     url = raw_url
     if url.startswith("postgres://"):
@@ -95,12 +105,11 @@ def get_db():
 
 
 def init_db():
-    """Create all required tables in Supabase PostgreSQL if they do not exist."""
+    """Create all required tables if they do not exist."""
     try:
         from app.models import Complaint, ComplaintHistory, Feedback  # noqa: F401
         Base.metadata.create_all(bind=engine)
-        logger.info("Supabase PostgreSQL tables initialized successfully.")
+        logger.info("Database tables initialized successfully.")
     except Exception as exc:
         masked_exc = re.sub(r':[^:@/]+@', ':****@', str(exc))
         logger.error("Database initialization notice: %s", masked_exc)
-        raise

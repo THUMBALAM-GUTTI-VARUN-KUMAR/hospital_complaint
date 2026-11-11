@@ -21,6 +21,7 @@ from app.schemas import (
     ComplaintStatusUpdate,
 )
 from app.services import generate_complaint_id, record_complaint_history
+from app.supabase_client import sync_complaint_to_supabase, sync_history_to_supabase
 
 router = APIRouter(prefix="/api/complaints", tags=["Complaints"])
 
@@ -79,6 +80,33 @@ def create_complaint(
 
     db.commit()
     db.refresh(complaint)
+
+    # Sync grievance and creation history to Supabase
+    sync_complaint_to_supabase({
+        "complaint_id": complaint.complaint_id,
+        "patient_name": complaint.patient_name,
+        "contact_number": complaint.contact_number,
+        "department": complaint.department,
+        "category": complaint.category,
+        "priority": complaint.priority,
+        "status": complaint.status,
+        "source": complaint.source,
+        "description": complaint.description,
+        "assigned_to": complaint.assigned_to,
+        "assigned_department": complaint.assigned_department,
+        "call_recording_url": complaint.call_recording_url,
+        "transcript": complaint.transcript,
+    })
+    sync_history_to_supabase(
+        complaint_id=new_id,
+        action="COMPLAINT_CREATED",
+        previous_status=None,
+        new_status="Pending",
+        assigned_to=complaint.assigned_to,
+        changed_by="Intake Service" if complaint.source == "voice_call" else "Citizen Portal",
+        notes=f"Complaint lodged via {complaint.source}.",
+    )
+
     return complaint
 
 
@@ -222,6 +250,32 @@ def update_complaint_status(
 
     db.commit()
     db.refresh(complaint)
+
+    # Sync grievance status update and audit history to Supabase
+    sync_complaint_to_supabase({
+        "complaint_id": complaint.complaint_id,
+        "patient_name": complaint.patient_name,
+        "contact_number": complaint.contact_number,
+        "department": complaint.department,
+        "category": complaint.category,
+        "priority": complaint.priority,
+        "status": complaint.status,
+        "source": complaint.source,
+        "description": complaint.description,
+        "assigned_to": complaint.assigned_to,
+        "assigned_department": complaint.assigned_department,
+        "resolution_notes": complaint.resolution_notes,
+    })
+    sync_history_to_supabase(
+        complaint_id=complaint.complaint_id,
+        action="STATUS_CHANGED",
+        previous_status=previous_status,
+        new_status=new_status,
+        assigned_to=complaint.assigned_to,
+        changed_by=payload.changed_by or "Admin",
+        notes=payload.notes or f"Status transitioned from {previous_status} to {new_status}.",
+    )
+
     return complaint
 
 
@@ -255,7 +309,7 @@ def assign_complaint(
 
     record_complaint_history(
         db=db,
-        complaint_id=complaint_id,
+        complaint_id=complaint.complaint_id,
         action="ASSIGNED",
         previous_status=prev_status,
         new_status=complaint.status,
@@ -266,4 +320,30 @@ def assign_complaint(
 
     db.commit()
     db.refresh(complaint)
+
+    # Sync grievance assignment and audit history to Supabase
+    sync_complaint_to_supabase({
+        "complaint_id": complaint.complaint_id,
+        "patient_name": complaint.patient_name,
+        "contact_number": complaint.contact_number,
+        "department": complaint.department,
+        "category": complaint.category,
+        "priority": complaint.priority,
+        "status": complaint.status,
+        "source": complaint.source,
+        "description": complaint.description,
+        "assigned_to": complaint.assigned_to,
+        "assigned_department": complaint.assigned_department,
+        "resolution_notes": complaint.resolution_notes,
+    })
+    sync_history_to_supabase(
+        complaint_id=complaint.complaint_id,
+        action="ASSIGNED",
+        previous_status=prev_status,
+        new_status=complaint.status,
+        assigned_to=complaint.assigned_to,
+        changed_by=payload.changed_by or "Admin",
+        notes=payload.notes or f"Assigned to {complaint.assigned_to}.",
+    )
+
     return complaint
